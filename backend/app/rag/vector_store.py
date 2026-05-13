@@ -7,7 +7,8 @@ from typing import Optional
 
 import chromadb
 from chromadb.config import Settings as ChromaSettings
-from langchain.schema import Document
+from langchain_core.documents import Document
+
 
 from app.config.settings import settings
 from app.rag.embedder import embed_texts, embed_query

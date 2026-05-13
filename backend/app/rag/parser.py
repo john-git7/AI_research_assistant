@@ -5,7 +5,8 @@ Returns a list of LangChain Document objects with page-level metadata.
 from pathlib import Path
 from typing import Optional
 
-from langchain.schema import Document
+from langchain_core.documents import Document
+
 
 from app.utils.text_utils import clean_text
 
