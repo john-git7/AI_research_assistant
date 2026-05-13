@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: ai-research-assistant-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-1.5-flash
+      - key: CHROMA_DB_PATH
+        value: ./chroma_db
+      - key: CHROMA_COLLECTION_NAME
+        value: research_assistant
+      - key: UPLOAD_DIR
+        value: ./uploads
+      - key: CHUNK_SIZE
+        value: "1000"
+      - key: CHUNK_OVERLAP
+        value: "200"
+      - key: RETRIEVAL_TOP_K
+        value: "5"
+      - key: CORS_ORIGINS
+        value: '["*"]'
