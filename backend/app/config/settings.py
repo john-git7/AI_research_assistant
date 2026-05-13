@@ -27,8 +27,8 @@ class Settings(BaseSettings):
     ALLOWED_EXTENSIONS: list[str] = ["pdf", "txt"]
 
     # ── RAG ───────────────────────────────────────────────────────────────────
-    CHUNK_SIZE: int = 1000
-    CHUNK_OVERLAP: int = 200
+    CHUNK_SIZE: int = 4000
+    CHUNK_OVERLAP: int = 400
     RETRIEVAL_TOP_K: int = 5
 
     # ── Embedding ─────────────────────────────────────────────────────────────

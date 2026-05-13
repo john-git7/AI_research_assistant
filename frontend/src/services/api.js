@@ -8,7 +8,7 @@ const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 120000, // 2 min — LLM calls can be slow
+  timeout: 600000, // 10 min — accounts for LLM calls and API rate-limit delays
   headers: {
     'Content-Type': 'application/json',
   },
@@ -33,6 +33,7 @@ export const uploadDocument = (file, onProgress) => {
   formData.append('file', file)
   return api.post('/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 0, // No timeout for uploads to allow for multi-batch rate limit pauses
     onUploadProgress: (e) => {
       if (onProgress && e.total) {
         onProgress(Math.round((e.loaded * 100) / e.total))
@@ -41,7 +42,9 @@ export const uploadDocument = (file, onProgress) => {
   })
 }
 
-export const getDocuments = () => api.get('/upload/documents')
+export const getDocuments = () => api.get(`/upload/documents?t=${Date.now()}`)
+
+export const deleteDocument = (documentId) => api.delete(`/upload/documents/${documentId}`)
 
 // ── Ask ───────────────────────────────────────────────────────────────────────
 export const askQuestion = (question, documentIds = [], topK = 5) =>

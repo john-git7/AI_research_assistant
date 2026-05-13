@@ -3,7 +3,7 @@
  * Used by Sidebar and UploadZone to share document state.
  */
 import { useState, useCallback } from 'react'
-import { uploadDocument, getDocuments } from '../services/api'
+import { uploadDocument, getDocuments, deleteDocument } from '../services/api'
 
 export function useDocuments() {
   const [documents, setDocuments] = useState([])
@@ -48,6 +48,20 @@ export function useDocuments() {
     }
   }, [])
 
+  const removeDoc = useCallback(async (documentId) => {
+    setLoading(true)
+    try {
+      await deleteDocument(documentId)
+      setDocuments((prev) => prev.filter((d) => d.document_id !== documentId))
+      return true
+    } catch (err) {
+      console.error('Failed to delete document:', err.message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   return {
     documents,
     setDocuments,
@@ -57,5 +71,6 @@ export function useDocuments() {
     loading,
     fetchDocuments,
     upload,
+    removeDoc,
   }
 }

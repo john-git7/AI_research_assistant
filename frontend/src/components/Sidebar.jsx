@@ -15,6 +15,7 @@ export default function Sidebar({
   uploadError,
   onRefresh,
   loading,
+  onDeleteDoc,
 }) {
   return (
     <aside className="flex flex-col h-full bg-surface-50 border-r border-white/5 w-72 flex-shrink-0">
@@ -49,6 +50,7 @@ export default function Sidebar({
             Documents ({documents.length})
           </p>
           <button
+            type="button"
             onClick={onRefresh}
             disabled={loading}
             className="btn-ghost p-1 rounded-md"
@@ -70,24 +72,24 @@ export default function Sidebar({
             {documents.map((doc) => {
               const isSelected = selectedDocIds.includes(doc.document_id)
               return (
-                <li key={doc.document_id}>
+                <li
+                  key={doc.document_id}
+                  className={`
+                    flex items-center justify-between rounded-lg transition-all duration-150 group
+                    ${isSelected
+                      ? 'bg-brand-500/15 border border-brand-500/30'
+                      : 'bg-surface-100 border border-transparent hover:border-white/10'
+                    }
+                  `}
+                >
                   <button
+                    type="button"
                     id={`doc-${doc.document_id}`}
                     onClick={() => onToggleDoc(doc.document_id)}
-                    className={`
-                      w-full flex items-start gap-2.5 px-3 py-2.5 rounded-lg text-left
-                      transition-all duration-150 group
-                      ${isSelected
-                        ? 'bg-brand-500/15 border border-brand-500/30'
-                        : 'bg-surface-100 border border-transparent hover:border-white/10'
-                      }
-                    `}
+                    className="flex-1 flex items-start gap-2.5 px-3 py-2.5 rounded-l-lg text-left min-w-0"
                   >
                     <div className={`flex-shrink-0 mt-0.5 ${isSelected ? 'text-brand-400' : 'text-gray-500'}`}>
-                      {isSelected
-                        ? <CheckCircle2 size={14} />
-                        : <FileText size={14} />
-                      }
+                      {isSelected ? <CheckCircle2 size={14} /> : <FileText size={14} />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-xs font-medium truncate ${isSelected ? 'text-brand-300' : 'text-gray-300'}`}>
@@ -100,6 +102,20 @@ export default function Sidebar({
                       </p>
                     </div>
                   </button>
+                  {onDeleteDoc && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDeleteDoc(doc.document_id)
+                      }}
+                      className="p-2 text-gray-500 hover:text-red-400 opacity-40 group-hover:opacity-100 focus:opacity-100 transition-all duration-150 mr-0.5 rounded"
+                      title="Delete document"
+                      id={`delete-${doc.document_id}`}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
                 </li>
               )
             })}

@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.models.schemas import UploadResponse
 from app.utils.file_utils import validate_file, save_upload
-from app.services.document_service import ingest_document, list_documents
+from app.services.document_service import ingest_document, list_documents, remove_document
 
 router = APIRouter(prefix="/upload", tags=["Upload"])
 
@@ -48,3 +48,13 @@ async def upload_document(file: UploadFile = File(...)):
 async def get_documents():
     """List all uploaded and indexed documents."""
     return {"documents": list_documents()}
+
+
+@router.delete("/documents/{document_id}")
+async def delete_document_endpoint(document_id: str):
+    """Delete a document from the vector store, registry, and disk."""
+    try:
+        deleted_chunks = remove_document(document_id)
+        return {"message": "Document deleted successfully", "deleted_chunks": deleted_chunks}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to delete document: {exc}")

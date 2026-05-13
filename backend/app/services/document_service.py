@@ -81,7 +81,12 @@ def list_documents() -> list[dict]:
 
 
 def remove_document(document_id: str) -> int:
-    """Delete a document from the vector store and registry."""
+    """Delete a document from the vector store, registry, and on-disk storage."""
     deleted = delete_document(document_id)
     _document_registry.pop(document_id, None)
+    try:
+        file_path = get_file_path(document_id)
+        file_path.unlink(missing_ok=True)
+    except Exception:
+        pass
     return deleted

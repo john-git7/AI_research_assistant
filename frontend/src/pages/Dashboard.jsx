@@ -31,6 +31,7 @@ export default function Dashboard() {
     loading: docsLoading,
     fetchDocuments,
     upload,
+    removeDoc,
   } = useDocuments()
 
   useEffect(() => {
@@ -60,6 +61,15 @@ export default function Dashboard() {
     }
   }
 
+  const handleDeleteDoc = async (docId) => {
+    try {
+      await removeDoc(docId)
+      setSelectedDocIds((prev) => prev.filter((id) => id !== docId))
+    } catch {
+      // error already handled/logged in hook
+    }
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
@@ -73,6 +83,7 @@ export default function Dashboard() {
         uploadError={uploadError}
         onRefresh={fetchDocuments}
         loading={docsLoading}
+        onDeleteDoc={handleDeleteDoc}
       />
 
       {/* Main content area */}
