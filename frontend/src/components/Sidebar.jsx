@@ -2,7 +2,7 @@
  * Sidebar — document list, upload zone, and navigation actions.
  */
 import { useEffect } from 'react'
-import { FileText, Trash2, BookOpen, RefreshCw, CheckCircle2 } from 'lucide-react'
+import { FileText, Trash2, BookOpen, RefreshCw, CheckCircle2, X } from 'lucide-react'
 import UploadZone from './UploadZone'
 
 export default function Sidebar({
@@ -16,18 +16,32 @@ export default function Sidebar({
   onRefresh,
   loading,
   onDeleteDoc,
+  onClose,
 }) {
   return (
     <aside className="flex flex-col h-full bg-surface-50 border-r border-white/5 w-72 flex-shrink-0">
       {/* Header */}
-      <div className="px-4 py-4 border-b border-white/5">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center">
-            <BookOpen size={15} className="text-white" />
+      <div className="px-4 py-4 border-b border-white/5 flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center">
+              <BookOpen size={15} className="text-white" />
+            </div>
+            <h1 className="text-sm font-bold text-gray-100">ResearchAI</h1>
           </div>
-          <h1 className="text-sm font-bold text-gray-100">ResearchAI</h1>
+          <p className="text-xs text-gray-500 pl-9">RAG-powered document assistant</p>
         </div>
-        <p className="text-xs text-gray-500 pl-9">RAG-powered document assistant</p>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="md:hidden p-1.5 text-gray-400 hover:text-gray-200 hover:bg-surface-200 rounded-lg transition-colors"
+            title="Close sidebar"
+            id="close-sidebar-btn"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       {/* Upload Zone */}

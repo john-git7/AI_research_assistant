@@ -44,7 +44,7 @@ export default function SummaryPanel({ selectedDocIds }) {
         <h2 className="section-title">Document Summary</h2>
 
         {/* Summary type selector */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
           {SUMMARY_TYPES.map((type) => {
             const Icon = type.icon
             const isActive = summaryType === type.id

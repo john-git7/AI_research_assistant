@@ -121,7 +121,7 @@ export default function QuizPanel({ selectedDocIds }) {
       <div>
         <h2 className="section-title">Quiz Generator</h2>
 
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
           {/* Num questions */}
           <div>
             <label htmlFor="num-questions" className="block text-xs text-gray-400 mb-1.5">
