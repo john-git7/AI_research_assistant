@@ -96,8 +96,7 @@ class QuizResponse(BaseModel):
 # ── Compare ───────────────────────────────────────────────────────────────────
 
 class CompareRequest(BaseModel):
-    document_id_a: str
-    document_id_b: str
+    document_ids: list[str] = Field(..., min_length=1)
     focus_topic: Optional[str] = Field(
         default=None,
         description="Optional topic to focus the comparison on",
@@ -105,13 +104,13 @@ class CompareRequest(BaseModel):
 
 
 class CompareResponse(BaseModel):
-    document_a: str
-    document_b: str
+    document_ids: list[str]
     similarities: list[str]
     differences: list[str]
     topic_overlap: list[str]
     contradictions: list[str]
     summary: str
+    comparison: str  # Markdown formatted full report
 
 
 # ── LangGraph State ───────────────────────────────────────────────────────────

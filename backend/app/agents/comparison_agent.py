@@ -1,12 +1,12 @@
 """
-Comparison Agent: retrieves chunks from two documents and surfaces
+Comparison Agent: retrieves chunks from multiple documents and surfaces
 similarities, differences, topic overlaps, and contradictions.
 """
 from app.agents.base_agent import BaseAgent
 from app.rag.retriever import retrieve, format_context
 
 COMPARE_PROMPT = """You are an expert document analyst.
-You are given content from two separate documents below.
+You are given content from multiple documents below.
 Your task is to compare them carefully and return a structured analysis.
 
 STRICT RULES:
@@ -14,13 +14,8 @@ STRICT RULES:
 - Do NOT fabricate similarities or differences not present in the text.
 - Be specific and cite relevant points from each document.
 
-Document A ({doc_a_name}):
-{context_a}
-
----
-
-Document B ({doc_b_name}):
-{context_b}
+DOCUMENTS CONTENT:
+{formatted_contexts}
 
 {focus_instruction}
 
@@ -47,69 +42,74 @@ SUMMARY:
 
 
 class ComparisonAgent(BaseAgent):
-    """Compares two documents and returns structured analysis."""
+    """Compares multiple documents and returns structured analysis."""
 
     def run(self, state: dict) -> dict:
-        doc_id_a = state.get("document_id_a", "")
-        doc_id_b = state.get("document_id_b", "")
+        doc_ids = state.get("document_ids", [])
         focus_topic = state.get("topic")
-        top_k = 8
+        top_k = 6
 
-        if not doc_id_a or not doc_id_b:
-            state["error"] = "Two document IDs are required for comparison."
-            return state
-
-        if doc_id_a == doc_id_b:
-            state["error"] = "Cannot compare a document with itself."
+        if not doc_ids:
+            state["error"] = "At least one document ID is required for analysis."
             return state
 
         query = focus_topic if focus_topic else "main topics key arguments conclusions"
+        
+        all_chunks = []
+        formatted_contexts = ""
+        
+        for doc_id in doc_ids:
+            chunks = retrieve(query=query, document_ids=[doc_id], top_k=top_k)
+            if chunks:
+                all_chunks.extend(chunks)
+                doc_name = chunks[0]["metadata"].get("source", doc_id)
+                formatted_contexts += f"\nDOCUMENT: {doc_name}\n{format_context(chunks)}\n---\n"
 
-        chunks_a = retrieve(query=query, document_ids=[doc_id_a], top_k=top_k)
-        chunks_b = retrieve(query=query, document_ids=[doc_id_b], top_k=top_k)
+        state["retrieved_chunks"] = all_chunks
 
-        state["retrieved_chunks"] = chunks_a + chunks_b
-
-        if not chunks_a or not chunks_b:
-            missing = []
-            if not chunks_a:
-                missing.append(doc_id_a)
-            if not chunks_b:
-                missing.append(doc_id_b)
+        if not all_chunks:
             state["result"] = {
-                "document_a": doc_id_a,
-                "document_b": doc_id_b,
+                "document_ids": doc_ids,
                 "similarities": [],
                 "differences": [],
                 "topic_overlap": [],
                 "contradictions": [],
-                "summary": f"No content retrieved for document(s): {', '.join(missing)}",
+                "summary": "No content retrieved for the selected documents.",
+                "comparison": "No content available for comparison."
             }
             return state
 
-        # Extract filenames for display
-        doc_a_name = chunks_a[0]["metadata"].get("source", doc_id_a) if chunks_a else doc_id_a
-        doc_b_name = chunks_b[0]["metadata"].get("source", doc_id_b) if chunks_b else doc_id_b
-
-        context_a = format_context(chunks_a)
-        context_b = format_context(chunks_b)
         focus_instruction = f"Focus your comparison on: {focus_topic}" if focus_topic else ""
 
         prompt = COMPARE_PROMPT.format(
-            doc_a_name=doc_a_name,
-            doc_b_name=doc_b_name,
-            context_a=context_a,
-            context_b=context_b,
+            formatted_contexts=formatted_contexts,
             focus_instruction=focus_instruction,
         )
 
         raw = self._call_llm(prompt)
         parsed = self._parse_comparison(raw)
 
+        # Generate a full Markdown report for the frontend
+        comparison_markdown = f"# Comparative Analysis Report\n\n"
+        
+        if parsed["similarities"]:
+            comparison_markdown += "## Similarities\n" + "\n".join([f"- {s}" for s in parsed["similarities"]]) + "\n\n"
+        
+        if parsed["differences"]:
+            comparison_markdown += "## Differences\n" + "\n".join([f"- {d}" for d in parsed["differences"]]) + "\n\n"
+            
+        if parsed["topic_overlap"]:
+            comparison_markdown += "## Topic Overlap\n" + "\n".join([f"- {t}" for t in parsed["topic_overlap"]]) + "\n\n"
+            
+        if parsed["contradictions"]:
+            comparison_markdown += "## Contradictions\n" + "\n".join([f"- {c}" for c in parsed["contradictions"]]) + "\n\n"
+            
+        comparison_markdown += f"## Executive Summary\n{parsed['summary']}"
+
         state["result"] = {
-            "document_a": doc_a_name,
-            "document_b": doc_b_name,
+            "document_ids": doc_ids,
             **parsed,
+            "comparison": comparison_markdown
         }
         return state
 

@@ -26,6 +26,9 @@ async def ask_question(request: AskRequest):
     try:
         result_state = run_workflow(state)
     except Exception as exc:
+        msg = str(exc).lower()
+        if "429" in msg or "quota exceeded" in msg:
+            raise HTTPException(status_code=429, detail=f"Rate limit exceeded: {exc}")
         raise HTTPException(status_code=500, detail=f"Workflow error: {exc}")
 
     if result_state.get("error"):

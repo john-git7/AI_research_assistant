@@ -1,9 +1,6 @@
-/**
- * Sidebar — document list, upload zone, and navigation actions.
- */
-import { useEffect } from 'react'
-import { FileText, Trash2, BookOpen, RefreshCw, CheckCircle2, X } from 'lucide-react'
-import UploadZone from './UploadZone'
+import { Sparkles, RefreshCw, X, Activity, Trash2, Settings, Shield } from 'lucide-react'
+import DocumentCard from './DocumentCard'
+import { useRef } from 'react'
 
 export default function Sidebar({
   documents,
@@ -12,140 +9,123 @@ export default function Sidebar({
   onUpload,
   uploading,
   uploadProgress,
-  uploadError,
   onRefresh,
   loading,
   onDeleteDoc,
   onClose,
+  apiStatus,
 }) {
+  const fileInputRef = useRef(null)
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (e) => {
+    if (e.target.files?.length > 0) {
+      onUpload(e.target.files[0])
+    }
+  }
+
   return (
-    <aside className="flex flex-col h-full bg-surface-50 border-r border-white/5 w-72 flex-shrink-0">
+    <aside className="flex flex-col h-full bg-noir-950 border-r border-noir-800 w-[280px] flex-shrink-0 relative">
       {/* Header */}
-      <div className="px-4 py-4 border-b border-white/5 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center">
-              <BookOpen size={15} className="text-white" />
+      <div className="px-6 py-8">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-brand-primary flex items-center justify-center shadow-lg shadow-brand-primary/20">
+              <Sparkles size={18} className="text-white" />
             </div>
-            <h1 className="text-sm font-bold text-gray-100">ResearchAI</h1>
+            <h1 className="text-lg font-semibold text-zinc-50 tracking-tight">ResearchAI</h1>
           </div>
-          <p className="text-xs text-gray-500 pl-9">RAG-powered document assistant</p>
+          {onClose && (
+            <button onClick={onClose} className="md:hidden p-1.5 text-zinc-500 hover:text-zinc-50 transition-colors">
+              <X size={20} />
+            </button>
+          )}
         </div>
-        {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="md:hidden p-1.5 text-gray-400 hover:text-gray-200 hover:bg-surface-200 rounded-lg transition-colors"
-            title="Close sidebar"
-            id="close-sidebar-btn"
-          >
-            <X size={18} />
-          </button>
-        )}
+        <p className="text-[11px] text-zinc-500 uppercase tracking-[0.2em] font-medium ml-10">
+          Intelligent Research
+        </p>
       </div>
 
-      {/* Upload Zone */}
-      <div className="px-4 pt-4 pb-3 border-b border-white/5">
-        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
-          Upload Document
-        </p>
-        <UploadZone
-          onUpload={onUpload}
-          uploading={uploading}
-          progress={uploadProgress}
-          error={uploadError}
+      {/* Primary Action: Upload */}
+      <div className="px-6 mb-8">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+          accept=".pdf,.txt"
         />
+        <button
+          onClick={handleUploadClick}
+          disabled={uploading}
+          className="w-full group relative flex flex-col items-center justify-center py-6 rounded-2xl bg-noir-900 border border-noir-800 hover:border-brand-primary/50 hover:bg-noir-800 transition-all duration-300"
+        >
+          <div className="mb-2 p-2 rounded-xl bg-noir-800 border border-noir-700 group-hover:bg-brand-primary/10 group-hover:border-brand-primary/20 transition-colors">
+            <RefreshCw size={18} className={`text-zinc-500 group-hover:text-brand-primary ${uploading ? 'animate-spin' : ''}`} />
+          </div>
+          <span className="text-xs font-semibold text-zinc-400 group-hover:text-zinc-50 tracking-wide">
+            {uploading ? `Uploading ${uploadProgress}%` : 'Upload Document'}
+          </span>
+          {uploading && (
+            <div className="absolute bottom-0 left-0 h-1 bg-brand-primary transition-all duration-300 rounded-b-2xl" style={{ width: `${uploadProgress}%` }} />
+          )}
+        </button>
       </div>
 
       {/* Document List */}
-      <div className="flex-1 overflow-y-auto px-4 py-3">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-            Documents ({documents.length})
-          </p>
+      <div className="flex-1 overflow-y-auto px-6 py-2">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.15em]">
+            Files ({documents.length})
+          </h2>
           <button
-            type="button"
             onClick={onRefresh}
             disabled={loading}
-            className="btn-ghost p-1 rounded-md"
-            title="Refresh document list"
-            id="refresh-documents-btn"
+            className="p-1 text-zinc-600 hover:text-zinc-300 transition-colors"
           >
-            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
 
-        {documents.length === 0 ? (
-          <div className="text-center py-8">
-            <FileText size={28} className="text-gray-600 mx-auto mb-2" />
-            <p className="text-xs text-gray-500">No documents yet.</p>
-            <p className="text-xs text-gray-600">Upload a PDF or TXT file above.</p>
-          </div>
-        ) : (
-          <ul className="space-y-1.5">
-            {documents.map((doc) => {
-              const isSelected = selectedDocIds.includes(doc.document_id)
-              return (
-                <li
-                  key={doc.document_id}
-                  className={`
-                    flex items-center justify-between rounded-lg transition-all duration-150 group
-                    ${isSelected
-                      ? 'bg-brand-500/15 border border-brand-500/30'
-                      : 'bg-surface-100 border border-transparent hover:border-white/10'
-                    }
-                  `}
-                >
-                  <button
-                    type="button"
-                    id={`doc-${doc.document_id}`}
-                    onClick={() => onToggleDoc(doc.document_id)}
-                    className="flex-1 flex items-start gap-2.5 px-3 py-2.5 rounded-l-lg text-left min-w-0"
-                  >
-                    <div className={`flex-shrink-0 mt-0.5 ${isSelected ? 'text-brand-400' : 'text-gray-500'}`}>
-                      {isSelected ? <CheckCircle2 size={14} /> : <FileText size={14} />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-medium truncate ${isSelected ? 'text-brand-300' : 'text-gray-300'}`}>
-                        {doc.filename}
-                      </p>
-                      <p className="text-xs text-gray-600 mt-0.5">
-                        {doc.pages != null ? `${doc.pages} pages` : ''}
-                        {doc.pages != null && doc.chunks_created != null ? ' · ' : ''}
-                        {doc.chunks_created != null ? `${doc.chunks_created} chunks` : ''}
-                      </p>
-                    </div>
-                  </button>
-                  {onDeleteDoc && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onDeleteDoc(doc.document_id)
-                      }}
-                      className="p-2 text-gray-500 hover:text-red-400 opacity-40 group-hover:opacity-100 focus:opacity-100 transition-all duration-150 mr-0.5 rounded"
-                      title="Delete document"
-                      id={`delete-${doc.document_id}`}
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        )}
+        <div className="space-y-3">
+          {documents.map((doc) => (
+            <DocumentCard
+              key={doc.document_id}
+              doc={doc}
+              isSelected={selectedDocIds.includes(doc.document_id)}
+              onToggle={onToggleDoc}
+              onDelete={onDeleteDoc}
+            />
+          ))}
+          
+          {documents.length === 0 && !loading && (
+            <div className="py-12 border-2 border-dashed border-noir-800 rounded-2xl flex flex-col items-center justify-center text-center px-4">
+              <p className="text-xs text-zinc-600 leading-relaxed">
+                No documents uploaded yet.<br/>Click above to start.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Footer */}
-      {selectedDocIds.length > 0 && (
-        <div className="px-4 py-3 border-t border-white/5">
-          <p className="text-xs text-brand-400 font-medium">
-            {selectedDocIds.length} document{selectedDocIds.length > 1 ? 's' : ''} selected
-          </p>
-          <p className="text-xs text-gray-600">Click a document to deselect</p>
+      {/* Footer Settings */}
+      <div className="px-6 py-6 border-t border-noir-800 space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <div className={`w-1.5 h-1.5 rounded-full ${apiStatus === 'ok' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
+            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+              {apiStatus === 'ok' ? 'System Live' : 'System Offline'}
+            </span>
+          </div>
+          <button className="text-zinc-600 hover:text-zinc-300 transition-colors">
+            <Settings size={14} />
+          </button>
         </div>
-      )}
+      </div>
     </aside>
   )
 }
+

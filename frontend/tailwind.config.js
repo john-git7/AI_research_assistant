@@ -7,34 +7,30 @@ export default {
   theme: {
     extend: {
       colors: {
+        noir: {
+          950: '#09090B',
+          900: '#111113',
+          800: '#18181B',
+          700: '#27272A',
+        },
         brand: {
-          50:  '#f0f4ff',
-          100: '#dce6ff',
-          200: '#baccff',
-          300: '#85a8ff',
-          400: '#4d7bff',
-          500: '#2563eb',
-          600: '#1d4ed8',
-          700: '#1e40af',
-          800: '#1e3a8a',
-          900: '#1e3467',
+          primary: '#A855F7',
+          hover: '#9333EA',
+          glow: 'rgba(168,85,247,0.25)',
         },
-        surface: {
-          DEFAULT: '#0f1117',
-          50:  '#1a1d27',
-          100: '#1e2130',
-          200: '#252a38',
-          300: '#2e3446',
-        },
+        zinc: {
+          50: '#FAFAFA',
+          400: '#A1A1AA',
+          500: '#71717A',
+        }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
       },
       animation: {
-        'fade-in': 'fadeIn 0.2s ease-out',
-        'slide-up': 'slideUp 0.25s ease-out',
-        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'fade-in': 'fadeIn 0.4s ease-out',
+        'slide-up': 'slideUp 0.5s ease-out',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         fadeIn: {
@@ -42,10 +38,13 @@ export default {
           '100%': { opacity: '1' },
         },
         slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },
+      backdropBlur: {
+        xs: '2px',
+      }
     },
   },
   plugins: [],

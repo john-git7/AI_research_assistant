@@ -14,94 +14,87 @@
   }
 
   body {
-    @apply bg-surface text-gray-100 font-sans antialiased;
+    @apply bg-noir-950 text-zinc-50 font-sans antialiased;
     min-height: 100vh;
   }
 
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-surface-50;
+    @apply bg-noir-950;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-surface-300 rounded-full;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-brand-600;
+    @apply bg-noir-700 rounded-full hover:bg-zinc-500 transition-colors;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-500 hover:bg-brand-600
-           text-white font-medium text-sm transition-all duration-150
-           disabled:opacity-50 disabled:cursor-not-allowed active:scale-95;
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-brand-primary hover:bg-brand-hover
+           text-white font-medium text-sm transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]
+           shadow-lg shadow-brand-glow/10;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-200 hover:bg-surface-300
-           text-gray-200 font-medium text-sm transition-all duration-150
-           disabled:opacity-50 disabled:cursor-not-allowed active:scale-95;
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-noir-800 hover:bg-noir-700
+           text-zinc-400 hover:text-zinc-50 border border-noir-700 hover:border-zinc-500
+           font-medium text-sm transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
   }
 
   .btn-ghost {
-    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-gray-400 hover:text-gray-200
-           hover:bg-surface-200 text-sm transition-all duration-150;
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-50
+           hover:bg-noir-800 text-sm transition-all duration-200;
   }
 
-  .card {
-    @apply bg-surface-50 border border-white/5 rounded-xl p-4;
+  .glass-card {
+    @apply bg-noir-800/60 backdrop-blur-xl border border-noir-700 rounded-2xl p-5
+           shadow-2xl shadow-black/20;
   }
 
-  .input {
-    @apply w-full px-3 py-2 bg-surface-200 border border-white/10 rounded-lg
-           text-gray-200 placeholder-gray-500 text-sm
-           focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50
-           transition-all duration-150;
+  .input-noir {
+    @apply w-full px-4 py-3 bg-noir-900 border border-noir-700 rounded-2xl
+           text-zinc-50 placeholder-zinc-500 text-sm
+           focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:border-brand-primary/50
+           transition-all duration-200;
   }
 
-  .badge {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
-  }
-
-  .badge-blue {
-    @apply badge bg-brand-500/20 text-brand-300;
-  }
-
-  .badge-green {
-    @apply badge bg-emerald-500/20 text-emerald-400;
-  }
-
-  .badge-yellow {
-    @apply badge bg-amber-500/20 text-amber-400;
-  }
-
-  .badge-red {
-    @apply badge bg-red-500/20 text-red-400;
+  .hero-title {
+    @apply text-4xl font-semibold tracking-tight text-zinc-50;
   }
 
   .section-title {
-    @apply text-base font-semibold text-gray-200 mb-4;
+    @apply text-lg font-medium text-zinc-50;
   }
 
-  .divider {
-    @apply border-t border-white/5 my-4;
+  .optimize-gpu {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000;
+    will-change: transform, opacity;
+  }
+
+  .optimize-scroll {
+    -webkit-overflow-scrolling: touch;
+    will-change: scroll-position;
+  }
+
+  .text-muted {
+    @apply text-xs text-zinc-500;
   }
 }
 
 @layer utilities {
-  /* Hide scrollbar for Chrome, Safari and Opera */
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
-  /* Hide scrollbar for IE, Edge and Firefox */
   .scrollbar-none {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

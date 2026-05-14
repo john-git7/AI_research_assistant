@@ -1,34 +1,27 @@
-/**
- * Dashboard — main layout with sidebar + tabbed panel area.
- */
-import { useState, useEffect } from 'react'
-import { MessageSquare, FileText, HelpCircle, GitCompare, Activity, Menu } from 'lucide-react'
-import Sidebar from '../components/Sidebar'
+import { useState, useEffect, useRef } from 'react'
+import { Sparkles, Layers } from 'lucide-react'
 import ChatArea from '../components/ChatArea'
+import GlassDock from '../components/GlassDock'
+import SourceManager from '../components/SourceManager'
 import SummaryPanel from '../components/SummaryPanel'
 import QuizPanel from '../components/QuizPanel'
 import ComparePanel from '../components/ComparePanel'
+import ContextHub from '../components/ContextHub'
 import { useDocuments } from '../hooks/useDocuments'
 import { checkHealth } from '../services/api'
-
-const TABS = [
-  { id: 'chat', label: 'Ask', icon: MessageSquare },
-  { id: 'summary', label: 'Summary', icon: FileText },
-  { id: 'quiz', label: 'Quiz', icon: HelpCircle },
-  { id: 'compare', label: 'Compare', icon: GitCompare },
-]
+import UploadProgress from '../components/UploadProgress'
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('chat')
+  const [activeMode, setActiveMode] = useState('chat')
   const [selectedDocIds, setSelectedDocIds] = useState([])
-  const [apiStatus, setApiStatus] = useState('checking') // 'ok' | 'error' | 'checking'
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [apiStatus, setApiStatus] = useState('checking')
+  const [isSourceManagerOpen, setIsSourceManagerOpen] = useState(false)
+  const [currentUploadingFile, setCurrentUploadingFile] = useState(null)
 
   const {
     documents,
     uploading,
     uploadProgress,
-    uploadError,
     loading: docsLoading,
     fetchDocuments,
     upload,
@@ -37,9 +30,17 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDocuments()
+    const interval = setInterval(() => {
+      checkHealth()
+        .then(() => setApiStatus('ok'))
+        .catch(() => setApiStatus('error'))
+    }, 5000)
+    
     checkHealth()
       .then(() => setApiStatus('ok'))
       .catch(() => setApiStatus('error'))
+
+    return () => clearInterval(interval)
   }, [])
 
   const handleToggleDoc = (docId) => {
@@ -49,16 +50,17 @@ export default function Dashboard() {
   }
 
   const handleUpload = async (file) => {
+    setCurrentUploadingFile(file.name)
     try {
       const newDoc = await upload(file)
-      // Auto-select newly uploaded document
       if (newDoc?.document_id) {
         setSelectedDocIds((prev) =>
           prev.includes(newDoc.document_id) ? prev : [...prev, newDoc.document_id],
         )
       }
+      setTimeout(() => setCurrentUploadingFile(null), 2000)
     } catch {
-      // error already set in hook
+      setCurrentUploadingFile(null)
     }
   }
 
@@ -67,123 +69,125 @@ export default function Dashboard() {
       await removeDoc(docId)
       setSelectedDocIds((prev) => prev.filter((id) => id !== docId))
     } catch {
-      // error already handled/logged in hook
+      // error handled in hook
     }
   }
 
+  const fileInputRef = useRef(null)
+
+  const triggerUpload = () => {
+    fileInputRef.current?.click()
+  }
+
   return (
-    <div className="flex h-screen overflow-hidden w-full">
-      {/* Mobile Sidebar Overlay */}
-      {isSidebarOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden animate-fade-in">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
-            onClick={() => setIsSidebarOpen(false)}
-          />
-          {/* Drawer Container */}
-          <div className="relative flex flex-col h-full z-10 shadow-2xl">
-            <Sidebar
+    <div className="flex flex-col h-screen w-full bg-noir-950 overflow-hidden font-sans">
+      {currentUploadingFile && (
+        <UploadProgress 
+          progress={uploadProgress} 
+          filename={currentUploadingFile} 
+          status={uploading ? 'uploading' : 'done'}
+        />
+      )}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
+        className="hidden"
+        accept=".pdf,.txt"
+      />
+      {/* Premium Header */}
+      <header className="h-20 flex items-center justify-between px-8 bg-gradient-to-b from-noir-950 to-transparent z-40">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-brand-primary flex items-center justify-center shadow-2xl shadow-brand-primary/40 group cursor-pointer hover:scale-105 transition-transform duration-300">
+            <Sparkles size={20} className="text-white group-hover:rotate-12 transition-transform" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-zinc-50 tracking-tight">ResearchAI</h1>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <div className={`w-1 h-1 rounded-full ${apiStatus === 'ok' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
+              <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">
+                System {apiStatus === 'ok' ? 'Live' : 'Offline'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setIsSourceManagerOpen(true)}
+          className="group flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-noir-900/50 backdrop-blur-xl border border-noir-800 hover:border-brand-primary/50 hover:bg-noir-800 transition-all duration-300"
+        >
+          <div className="relative">
+            <Layers size={18} className="text-zinc-400 group-hover:text-brand-primary transition-colors" />
+            {selectedDocIds.length > 0 && (
+              <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-brand-primary text-[10px] font-bold text-white flex items-center justify-center border-2 border-noir-950 shadow-lg animate-pulse">
+                {selectedDocIds.length}
+              </div>
+            )}
+          </div>
+          <span className="text-sm font-semibold text-zinc-400 group-hover:text-zinc-50 transition-colors">
+            Library
+          </span>
+        </button>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto w-full relative optimize-scroll scrollbar-none">
+        <div className="w-full max-w-5xl mx-auto px-6 py-8 optimize-gpu">
+          {/* Sticky Research Context Hub */}
+          <div className="sticky top-0 z-30 pt-2 pb-6 bg-gradient-to-b from-noir-950 via-noir-950/90 to-transparent">
+            <ContextHub 
               documents={documents}
               selectedDocIds={selectedDocIds}
               onToggleDoc={handleToggleDoc}
-              onUpload={handleUpload}
-              uploading={uploading}
-              uploadProgress={uploadProgress}
-              uploadError={uploadError}
-              onRefresh={fetchDocuments}
-              loading={docsLoading}
-              onDeleteDoc={handleDeleteDoc}
-              onClose={() => setIsSidebarOpen(false)}
+              onUpload={triggerUpload}
             />
           </div>
-        </div>
-      )}
 
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex flex-shrink-0 h-full">
-        <Sidebar
+          <div className="pb-40">
+            {activeMode === 'chat' && (
+              <ChatArea 
+                documents={documents}
+                selectedDocIds={selectedDocIds} 
+                onToggleDoc={handleToggleDoc}
+                onUpload={triggerUpload}
+                uploading={uploading}
+                uploadProgress={uploadProgress}
+              />
+            )}
+            {activeMode === 'summary' && (
+              <SummaryPanel selectedDocIds={selectedDocIds} />
+            )}
+            {activeMode === 'quiz' && (
+              <QuizPanel selectedDocIds={selectedDocIds} />
+            )}
+            {activeMode === 'compare' && (
+              <ComparePanel documents={documents} selectedDocIds={selectedDocIds} />
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Navigation Dock */}
+      <GlassDock 
+        activeMode={activeMode} 
+        onModeChange={setActiveMode} 
+      />
+
+      {/* Overlay Source Manager */}
+      {isSourceManagerOpen && (
+        <SourceManager
           documents={documents}
           selectedDocIds={selectedDocIds}
           onToggleDoc={handleToggleDoc}
           onUpload={handleUpload}
           uploading={uploading}
           uploadProgress={uploadProgress}
-          uploadError={uploadError}
           onRefresh={fetchDocuments}
           loading={docsLoading}
           onDeleteDoc={handleDeleteDoc}
+          onClose={() => setIsSourceManagerOpen(false)}
         />
-      </div>
-
-      {/* Main content area */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden w-full">
-        {/* Top bar */}
-        <header className="flex items-center justify-between px-3 md:px-4 py-2.5 border-b border-white/5 bg-surface-50 flex-shrink-0 gap-2">
-          {/* Left section: Hamburger + Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none min-w-0 py-0.5">
-            {/* Hamburger button for mobile */}
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(true)}
-              className="md:hidden p-1.5 text-gray-400 hover:text-gray-200 hover:bg-surface-200 rounded-lg transition-colors flex-shrink-0"
-              title="Open sidebar"
-              id="open-sidebar-btn"
-            >
-              <Menu size={18} />
-            </button>
-
-            {/* Tab navigation */}
-            <nav className="flex items-center gap-1 flex-shrink-0" role="tablist">
-              {TABS.map((tab) => {
-                const Icon = tab.icon
-                const isActive = activeTab === tab.id
-                return (
-                  <button
-                    key={tab.id}
-                    id={`tab-${tab.id}`}
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-150 whitespace-nowrap
-                      ${isActive
-                        ? 'bg-brand-500/15 text-brand-400'
-                        : 'text-gray-500 hover:text-gray-300 hover:bg-surface-200'
-                      }`}
-                  >
-                    <Icon size={15} className="flex-shrink-0" />
-                    {tab.label}
-                  </button>
-                )
-              })}
-            </nav>
-          </div>
-
-          {/* API status indicator */}
-          <div className="flex items-center gap-1.5 flex-shrink-0 pl-1">
-            <Activity size={13} className={apiStatus === 'ok' ? 'text-emerald-400' : apiStatus === 'error' ? 'text-red-400' : 'text-gray-500 animate-pulse'} />
-            <span className="hidden sm:inline text-xs text-gray-500">
-              {apiStatus === 'ok' ? 'API connected' : apiStatus === 'error' ? 'API offline' : 'Connecting…'}
-            </span>
-          </div>
-        </header>
-
-        {/* Panel content */}
-        <main className="flex-1 overflow-hidden w-full">
-          {activeTab === 'chat' && (
-            <ChatArea selectedDocIds={selectedDocIds} />
-          )}
-          {activeTab === 'summary' && (
-            <SummaryPanel selectedDocIds={selectedDocIds} />
-          )}
-          {activeTab === 'quiz' && (
-            <QuizPanel selectedDocIds={selectedDocIds} />
-          )}
-          {activeTab === 'compare' && (
-            <ComparePanel documents={documents} />
-          )}
-        </main>
-      </div>
+      )}
     </div>
   )
 }
