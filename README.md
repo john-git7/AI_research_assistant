@@ -4,7 +4,15 @@ A production-style Retrieval-Augmented Generation (RAG) system for students and 
 Upload documents → Ask questions → Get cited answers → Generate summaries, quizzes, and comparisons.
 
 ---
+## Team Information
 
+**Team Name:** Team Bishop
+
+**Partner 1:** John Ebenezer
+
+**Partner 2:** Gukesh
+
+---
 ## Architecture
 
 ```
