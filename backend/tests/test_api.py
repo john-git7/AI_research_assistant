@@ -10,6 +10,8 @@ def client():
     with TestClient(app) as test_client:
         yield test_client
 
+def test_intentional_ci_failure():
+    assert 1 == 2
 
 def test_health_check(client):
     """Test the health check endpoint returns 200 and standard response keys."""
