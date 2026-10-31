@@ -24,3 +24,6 @@ pymupdf>=1.24.3
 # Utilities
 python-dotenv>=1.0.1
 httpx>=0.27.0
+
+# Testing & Code Quality
+pytest>=8.0.0

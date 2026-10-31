@@ -1,5 +1,7 @@
 # AI Research Assistant
 
+[![CI/CD Pipeline](https://github.com/john-git7/AI_research_assistant/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/john-git7/AI_research_assistant/actions/workflows/ci-cd.yml)
+
 A production-style Retrieval-Augmented Generation (RAG) system for students and professionals.  
 Upload documents → Ask questions → Get cited answers → Generate summaries, quizzes, and comparisons.
 
@@ -324,3 +326,18 @@ This is enforced at the prompt level in every agent, not as an optional feature.
 1. Go to https://aistudio.google.com/app/apikey
 2. Create a new API key
 3. Add it to `backend/.env` as `GEMINI_API_KEY=your_key_here`
+
+---
+
+## CI/CD Pipeline
+
+This project includes a comprehensive CI/CD pipeline powered by **GitHub Actions** (`.github/workflows/ci-cd.yml`):
+
+- **Continuous Integration (CI)**:
+  - **Backend Job**: Automatically sets up Python 3.11 with pip caching, validates Python bytecode syntax, and executes the `pytest` test suite.
+  - **Frontend Job**: Sets up Node.js 20 with npm caching, verifies dependencies (`npm ci`), runs ESLint (`npm run lint`), and builds production assets (`npm run build`).
+  - **Triggers**: Runs on all pull requests and pushes to `main`.
+- **Continuous Deployment (CD)**:
+  - Runs automatically on merge or push to `main` once all CI checks pass.
+  - **Backend**: Triggers automated zero-downtime deploy via Render Deploy Hook (`RENDER_DEPLOY_HOOK_URL`).
+  - **Frontend**: Triggers production deployment to Vercel (`VERCEL_TOKEN`).

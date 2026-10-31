@@ -7,6 +7,7 @@ venv/
 env/
 dist/
 build/
+.pytest_cache/
 
 # Environment
 .env
