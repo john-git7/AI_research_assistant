@@ -91,12 +91,12 @@ jobs:
           RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
           if [ -n "$RENDER_HOOK" ]; then
-            echo "🚀 Triggering Render deployment hook..."
+            echo "Triggering Render deployment hook..."
             curl -f -X POST "$RENDER_HOOK"
-            echo "✅ Render deployment triggered successfully."
+            echo "Render deployment triggered successfully."
           else
-            echo "ℹ️ RENDER_DEPLOY_HOOK_URL secret not configured in GitHub Secrets."
-            echo "👉 To enable automatic Render deployments, add your Render Deploy Hook URL to GitHub Repo Settings > Secrets and variables > Actions."
+            echo "RENDER_DEPLOY_HOOK_URL secret not configured in GitHub Secrets."
+            echo "To enable automatic Render deployments, add your Render Deploy Hook URL to GitHub Repo Settings > Secrets and variables > Actions."
           fi
 
   # ─── 4. CONTINUOUS DEPLOYMENT - FRONTEND ───────────────────────────
@@ -132,9 +132,9 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           if [ -n "$VERCEL_TOKEN" ]; then
-            echo "🚀 Deploying production build to Vercel..."
+            echo "Deploying production build to Vercel..."
             npx --yes vercel deploy --prod --token="$VERCEL_TOKEN"
           else
-            echo "ℹ️ VERCEL_TOKEN secret not configured in GitHub Secrets."
-            echo "👉 If using Vercel, connect your GitHub repository directly in Vercel or configure VERCEL_TOKEN in Secrets."
+            echo "VERCEL_TOKEN secret not configured in GitHub Secrets."
+            echo "If using Vercel, connect your GitHub repository directly in Vercel or configure VERCEL_TOKEN in Secrets."
           fi
